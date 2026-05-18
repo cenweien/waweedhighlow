@@ -444,6 +444,67 @@ main {
   font-size: 0.85em;
 }
 
+/* ── Leaderboard & submit ───────────────────────────────────────────────── */
+
+#submit-area {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0.25rem;
+  width: 100%;
+  justify-content: center;
+}
+
+#player-name {
+  flex: 1;
+  max-width: 180px;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+#player-name:focus { outline: 2px solid var(--accent); }
+
+.submit-ok  { color: var(--correct); font-size: 0.88rem; margin: 0.25rem 0; }
+.submit-err { color: var(--wrong);   font-size: 0.88rem; margin: 0.25rem 0; }
+
+#leaderboard {
+  width: 100%;
+  margin: 0.75rem 0 0.25rem;
+  text-align: left;
+}
+
+#leaderboard h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #8b949e;
+  margin: 0 0 0.4rem;
+}
+
+#leaderboard-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+#leaderboard-list li {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.lb-rank   { color: #8b949e; min-width: 2rem; }
+.lb-name   { flex: 1; }
+.lb-streak { font-weight: 600; color: var(--accent); }
+
 /* ── Responsive ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 520px) {

@@ -41,6 +41,15 @@
       <div class="gameover-label">streak</div>
       <div class="gameover-best"   id="overlay-best"></div>
       <div class="gameover-killer" id="overlay-killer"></div>
+      <div id="submit-area">
+        <input id="player-name" type="text" maxlength="20" placeholder="Your name" autocomplete="off">
+        <button id="submit-btn" class="btn btn-primary">Submit score</button>
+        <p id="submit-msg" class="hidden"></p>
+      </div>
+      <div id="leaderboard" class="hidden">
+        <h3>Top 10</h3>
+        <ol id="leaderboard-list"></ol>
+      </div>
       <div class="btn-row">
         <button id="share-btn" class="btn btn-secondary">Share challenge</button>
         <button id="again-btn" class="btn btn-primary">Play again</button>

@@ -1,5 +1,10 @@
 'use strict';
 
+// ── Supabase config — fill these in after creating your project ───────────────
+// Get both values from: supabase.com → project → Settings → API
+const SUPABASE_URL      = 'https://YOUR-PROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR-ANON-KEY';
+
 // ── Seeded PRNG (mulberry32) ──────────────────────────────────────────────────
 
 function mulberry32(seed) {
@@ -125,12 +130,18 @@ const actionBar = $('action-bar');
 const higherBtn = $('higher-btn');
 const lowerBtn  = $('lower-btn');
 const nextBtn   = $('next-btn');
-const overlay   = $('overlay');
-const oScore    = $('overlay-score');
-const oBest     = $('overlay-best');
-const oKiller   = $('overlay-killer');
-const shareBtn  = $('share-btn');
-const againBtn  = $('again-btn');
+const overlay        = $('overlay');
+const oScore         = $('overlay-score');
+const oBest          = $('overlay-best');
+const oKiller        = $('overlay-killer');
+const submitArea     = $('submit-area');
+const playerNameEl   = $('player-name');
+const submitBtn      = $('submit-btn');
+const submitMsg      = $('submit-msg');
+const leaderboardEl  = $('leaderboard');
+const leaderListEl   = $('leaderboard-list');
+const shareBtn       = $('share-btn');
+const againBtn       = $('again-btn');
 
 // ── Render ────────────────────────────────────────────────────────────────────
 
@@ -267,7 +278,62 @@ function showGameOver() {
       + `"${a.word}" (${a.count.toLocaleString()}) — you guessed ${playerGuess}`;
   }
 
+  // Reset submit UI for this new game-over
+  submitArea.classList.remove('hidden');
+  submitMsg.textContent = '';
+  submitMsg.className = 'hidden';
+  submitBtn.disabled = false;
+  leaderboardEl.classList.add('hidden');
+  leaderListEl.innerHTML = '';
+
   overlay.classList.remove('hidden');
+}
+
+async function submitScore() {
+  const playerName = playerNameEl.value.trim();
+  if (!playerName) { playerNameEl.focus(); return; }
+
+  submitBtn.disabled = true;
+  submitMsg.textContent = 'Submitting…';
+  submitMsg.className = '';
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/validate-score`, {
+      method:  'POST',
+      headers: {
+        'Content-Type':  'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ playerName, seed: gs.seed, streak: gs.streak }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error ?? res.statusText);
+
+    submitMsg.textContent = `Submitted! You ranked #${data.rank}`;
+    submitArea.classList.add('hidden');
+    submitMsg.className = 'submit-ok';
+    fetchLeaderboard();
+  } catch (err) {
+    submitMsg.textContent = `Error: ${err.message}`;
+    submitMsg.className = 'submit-err';
+    submitBtn.disabled = false;
+  }
+}
+
+async function fetchLeaderboard() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/scores?select=player_name,streak,submitted_at&order=streak.desc,submitted_at.asc&limit=10`,
+      { headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` } },
+    );
+    if (!res.ok) return;
+    const rows = await res.json();
+
+    leaderListEl.innerHTML = rows
+      .map((r, i) => `<li><span class="lb-rank">#${i + 1}</span> <span class="lb-name">${r.player_name}</span> <span class="lb-streak">${r.streak}</span></li>`)
+      .join('');
+    leaderboardEl.classList.remove('hidden');
+  } catch { /* leaderboard is optional; silently skip on error */ }
 }
 
 function share() {
@@ -338,6 +404,8 @@ lowerBtn.addEventListener('click',  () => guess('less'));
 nextBtn.addEventListener('click', nextRound);
 shareBtn.addEventListener('click', share);
 againBtn.addEventListener('click', () => restart());
+submitBtn.addEventListener('click', submitScore);
+playerNameEl.addEventListener('keydown', e => { if (e.key === 'Enter') submitScore(); });
 
 updateStats();
 
