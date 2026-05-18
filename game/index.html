@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Higher or Lower — Waweed</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <span class="logo">Higher or Lower</span>
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-label">Streak</span>
+        <span class="stat-value" id="streak-count">0</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Best</span>
+        <span class="stat-value" id="best-count">0</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <p class="prompt">Was the right word said <em>more</em> or <em>fewer</em> times than the left?</p>
+    <div id="card-area"></div>
+    <div class="controls">
+      <div id="action-bar" class="action-bar">
+        <button id="higher-btn" class="action-btn more">↑ More</button>
+        <button id="lower-btn"  class="action-btn less">↓ Less</button>
+      </div>
+      <button id="next-btn" class="next-btn hidden">Next &rarr;</button>
+    </div>
+  </main>
+
+  <div id="overlay" class="hidden">
+    <div class="gameover-card">
+      <div class="gameover-emoji">💀</div>
+      <h2>Game Over</h2>
+      <div class="gameover-score" id="overlay-score">0</div>
+      <div class="gameover-label">streak</div>
+      <div class="gameover-best"   id="overlay-best"></div>
+      <div class="gameover-killer" id="overlay-killer"></div>
+      <div class="btn-row">
+        <button id="share-btn" class="btn btn-secondary">Share challenge</button>
+        <button id="again-btn" class="btn btn-primary">Play again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
