@@ -2,7 +2,7 @@
 
 // ── Supabase config — fill these in after creating your project ───────────────
 // Get both values from: supabase.com → project → Settings → API
-const SUPABASE_URL      = 'https://oohgpdpawbwuottbvwoq.supabase.co/rest/v1/';
+const SUPABASE_URL      = 'https://oohgpdpawbwuottbvwoq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9vaGdwZHBhd2J3dW90dGJ2d29xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0Mjg5ODYsImV4cCI6MjA5NTAwNDk4Nn0.tDi0BB5is5ZcoUoBpW6iHMCGO4f_KV3JG3PP5xKF-1E';
 
 // ── Seeded PRNG (mulberry32) ──────────────────────────────────────────────────
