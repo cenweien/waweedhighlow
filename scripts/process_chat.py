@@ -8,7 +8,7 @@ Output: "../data/words.json"
 import json
 import re
 import ssl
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 
 import nltk
@@ -23,6 +23,7 @@ else:
 
 nltk.download("stopwords", quiet=True)
 from nltk.corpus import stopwords
+from nltk.stem import PorterStemmer
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
@@ -87,8 +88,13 @@ def main() -> None:
     print(f"  {len(messages):,} messages found")
 
     USER_TYPES = {"Default", "Reply"}
+    stemmer = PorterStemmer()
 
-    counter: Counter = Counter()
+    # stem → {surface_form: count}
+    # We group all inflected forms under their stem, then display the most
+    # common surface form (e.g. "sell" groups "sells", "selling", "selled").
+    stem_forms: dict[str, Counter] = defaultdict(Counter)
+
     for msg in messages:
         if msg.get("type") not in USER_TYPES:
             continue
@@ -97,18 +103,25 @@ def main() -> None:
             continue
         for token in tokenise(content):
             if is_valid(token):
-                counter[token] += 1
+                stem = stemmer.stem(token)
+                stem_forms[stem][token] += 1
 
-    print(f"  {len(counter):,} unique tokens before filtering")
+    print(f"  {len(stem_forms):,} unique stems before filtering")
 
-    # Drop rare words (keep everything with count > 20)
-    counter = Counter({w: c for w, c in counter.items() if c >= MIN_OCCURRENCES})
-    print(f"  {len(counter):,} tokens with count > 20")
+    # Build output: use the most common surface form as the display word,
+    # count = total occurrences of all forms under that stem.
+    raw = []
+    for stem, forms in stem_forms.items():
+        total = sum(forms.values())
+        if total < MIN_OCCURRENCES:
+            continue
+        display_word = forms.most_common(1)[0][0]
+        raw.append((display_word, total))
 
-    top = counter.most_common()
-    print(f"  Total words included: {len(top)}")
+    raw.sort(key=lambda x: x[1], reverse=True)
+    print(f"  {len(raw):,} stems with count >= {MIN_OCCURRENCES}")
 
-    output = [{"word": word, "count": count, "categories": []} for word, count in top]
+    output = [{"word": word, "count": count, "categories": []} for word, count in raw]
 
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:

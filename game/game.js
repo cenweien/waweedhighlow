@@ -22,6 +22,13 @@ function parseSeed() {
   return p ? parseInt(p, 10) : (Math.random() * 2 ** 31) | 0;
 }
 
+// ── Early-game pool ───────────────────────────────────────────────────────────
+// For the first EARLY_ROUNDS of each game, candidates are restricted to words
+// with count >= INTERESTING_MIN so the opening pairs are always recognisable.
+
+const EARLY_ROUNDS    = 10;
+const INTERESTING_MIN = 500;
+
 // ── Trap words ────────────────────────────────────────────────────────────────
 //
 // Words that surprise players because their frequency is counterintuitive for
@@ -44,8 +51,8 @@ const TRAP_WORDS = [
 //   - Every 5th correct answer: inject a trap word as challenger
 //   - Otherwise: 80% pure-random gap, 20% same-category gap (if categories exist)
 
-function pickChallengerRank(words, streak, rand, used, anchorRank, trapQueue) {
-  const n = words.length;
+function pickChallengerRank(words, streak, rand, used, anchorRank, trapQueue, maxRank) {
+  const n = maxRank !== undefined ? maxRank : words.length;
 
   // Trap injection every 5 streaks
   if (streak > 0 && streak % 5 === 0 && trapQueue.length > 0) {
@@ -103,18 +110,19 @@ function candidateRank(rand, anchorRank, maxGap, n) {
 // ── State ─────────────────────────────────────────────────────────────────────
 
 const gs = {
-  words:          [],
-  rand:           null,
-  seed:           0,
-  used:           new Set(),   // all rank indices shown so far
-  streak:         0,
-  best:           parseInt(localStorage.getItem('waweed_best') ?? '0', 10),
-  anchorRank:     0,
-  challengerRank: 0,
+  words:            [],
+  rand:             null,
+  seed:             0,
+  used:             new Set(),   // all rank indices shown so far
+  streak:           0,
+  best:             parseInt(localStorage.getItem('waweed_best') ?? '0', 10),
+  anchorRank:       0,
+  challengerRank:   0,
   // 'guessing' | 'correct' | 'wrong' | 'gameover'
-  phase:          'loading',
-  trapQueue:      [],
-  wrong:          null,        // { anchorRank, challengerRank, playerGuess }
+  phase:            'loading',
+  trapQueue:        [],
+  wrong:            null,        // { anchorRank, challengerRank, playerGuess }
+  interestingCutoff: 0,          // first rank where count < INTERESTING_MIN
 };
 
 const anchor     = () => gs.words[gs.anchorRank];
@@ -253,8 +261,9 @@ function nextRound() {
   setTimeout(() => {
     // Chain: old challenger becomes new anchor
     gs.anchorRank     = gs.challengerRank;
+    const maxRank = gs.streak < EARLY_ROUNDS ? gs.interestingCutoff : undefined;
     gs.challengerRank = pickChallengerRank(
-      gs.words, gs.streak, gs.rand, gs.used, gs.anchorRank, gs.trapQueue,
+      gs.words, gs.streak, gs.rand, gs.used, gs.anchorRank, gs.trapQueue, maxRank,
     );
     gs.phase = 'guessing';
 
@@ -361,13 +370,16 @@ function restart(newSeed) {
     [gs.trapQueue[i], gs.trapQueue[j]] = [gs.trapQueue[j], gs.trapQueue[i]];
   }
 
-  // Start anchor from top 20% so first word is always recognisable
-  const topN       = Math.max(1, Math.floor(gs.words.length * 0.20));
-  gs.anchorRank    = Math.floor(gs.rand() * topN);
+  // Find cutoff rank for the interesting pool (count >= INTERESTING_MIN)
+  const cutoff = gs.words.findIndex(w => w.count < INTERESTING_MIN);
+  gs.interestingCutoff = cutoff > 1 ? cutoff : Math.floor(gs.words.length * 0.20);
+
+  // Start anchor within the interesting pool
+  gs.anchorRank = Math.floor(gs.rand() * gs.interestingCutoff);
   gs.used.add(gs.anchorRank);
 
   gs.challengerRank = pickChallengerRank(
-    gs.words, 0, gs.rand, gs.used, gs.anchorRank, gs.trapQueue,
+    gs.words, 0, gs.rand, gs.used, gs.anchorRank, gs.trapQueue, gs.interestingCutoff,
   );
   gs.phase = 'guessing';
 

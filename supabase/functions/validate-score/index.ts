@@ -24,6 +24,9 @@ function mulberry32(seed: number) {
 
 // ── Game logic — verbatim from game/game.js ───────────────────────────────────
 
+const EARLY_ROUNDS    = 10;
+const INTERESTING_MIN = 500;
+
 const TRAP_WORDS = [
   'sherman', 'wts', 'ape', 'op', 'ho', 'ppl', 'kk',
   'cuz', 'gay', 'bruh', 'dude', 'bro',
@@ -39,8 +42,9 @@ function candidateRank(rand: () => number, anchorRank: number, maxGap: number, n
 function pickChallengerRank(
   words: Word[], streak: number, rand: () => number,
   used: Set<number>, anchorRank: number, trapQueue: number[],
+  maxRank?: number,
 ): number {
-  const n = words.length;
+  const n = maxRank !== undefined ? maxRank : words.length;
 
   if (streak > 0 && streak % 5 === 0 && trapQueue.length > 0) {
     while (trapQueue.length > 0) {
@@ -93,22 +97,23 @@ function validateStreak(seed: number, claimedStreak: number): boolean {
   }
 
   const used      = new Set<number>();
-  const topN      = Math.max(1, Math.floor(n * 0.20));
-  let anchorRank  = Math.floor(rand() * topN);
+  const cutoff    = words.findIndex(w => w.count < INTERESTING_MIN);
+  const interestingCutoff = cutoff > 1 ? cutoff : Math.floor(n * 0.20);
+
+  let anchorRank  = Math.floor(rand() * interestingCutoff);
   used.add(anchorRank);
 
-  let challengerRank = pickChallengerRank(words, 0, rand, used, anchorRank, trapQueue);
+  let challengerRank = pickChallengerRank(words, 0, rand, used, anchorRank, trapQueue, interestingCutoff);
 
   // Replay `claimedStreak` rounds and confirm each pair is reachable
   for (let round = 0; round < claimedStreak; round++) {
     if (anchorRank < 0 || anchorRank >= n) return false;
     if (challengerRank < 0 || challengerRank >= n) return false;
-    // Both pairs must be distinct words (ties count as correct in game, so no hard failure)
     if (anchorRank === challengerRank) return false;
 
-    // Advance: challenger becomes anchor for next round
     anchorRank     = challengerRank;
-    challengerRank = pickChallengerRank(words, round + 1, rand, used, anchorRank, trapQueue);
+    const maxRank  = round + 1 < EARLY_ROUNDS ? interestingCutoff : undefined;
+    challengerRank = pickChallengerRank(words, round + 1, rand, used, anchorRank, trapQueue, maxRank);
   }
 
   return true;
