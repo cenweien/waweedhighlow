@@ -4,10 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Higher or Lower — Waweed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Lilita+One&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="bg" aria-hidden="true"></div>
   <header>
+    <button id="view-leaderboard-header" class="leaderboard-header-btn" title="View full leaderboard">📊</button>
     <span class="logo">Higher or Lower</span>
     <div class="stats">
       <div class="stat">
@@ -22,12 +27,12 @@
   </header>
 
   <main>
-    <p class="prompt">Was the right word said <em>more</em> or <em>fewer</em> times than the left?</p>
+    <p class="prompt">Is the right word said <em>higher</em> or <em>lower</em> than the left?</p>
     <div id="card-area"></div>
     <div class="controls">
       <div id="action-bar" class="action-bar">
-        <button id="higher-btn" class="action-btn more">↑ More</button>
-        <button id="lower-btn"  class="action-btn less">↓ Less</button>
+        <button id="higher-btn" class="action-btn higher">↑ Higher</button>
+        <button id="lower-btn"  class="action-btn lower">↓ Lower</button>
       </div>
       <button id="next-btn" class="next-btn hidden">Next &rarr;</button>
     </div>
@@ -42,13 +47,19 @@
       <div class="gameover-best"   id="overlay-best"></div>
       <div class="gameover-killer" id="overlay-killer"></div>
       <div id="submit-area">
-        <input id="player-name" type="text" maxlength="20" placeholder="Your name" autocomplete="off">
+        <input id="player-name" type="text" maxlength="30" placeholder="Your name" autocomplete="off">
         <button id="submit-btn" class="btn btn-primary">Submit score</button>
-        <p id="submit-msg" class="hidden"></p>
+        <div id="submit-loading" class="hidden">
+          <div class="loading-dots"><span></span><span></span><span></span></div>
+        </div>
       </div>
+      <p id="submit-msg" class="hidden"></p>
       <div id="leaderboard" class="hidden">
         <h3>Top 10</h3>
         <ol id="leaderboard-list"></ol>
+      </div>
+      <div id="view-full-lb-btn-container" class="hidden">
+        <button id="view-full-lb-btn" class="btn btn-secondary">View full leaderboard</button>
       </div>
       <div class="btn-row">
         <button id="share-btn" class="btn btn-secondary">Share challenge</button>
@@ -57,6 +68,27 @@
     </div>
   </div>
 
+  <div id="leaderboard-modal" class="hidden">
+    <div class="leaderboard-modal-content">
+      <div class="leaderboard-modal-header">
+        <h2>Full Leaderboard</h2>
+        <button id="close-leaderboard-modal" class="close-btn">✕</button>
+      </div>
+      <div class="leaderboard-modal-tabs">
+        <button id="tab-all-time" class="tab-btn active">All Time</button>
+        <button id="tab-seed" class="tab-btn">This Seed</button>
+      </div>
+      <div id="all-time-leaderboard" class="leaderboard-section">
+        <ol id="all-time-list" class="full-lb-list"></ol>
+      </div>
+      <div id="seed-leaderboard" class="leaderboard-section hidden">
+        <ol id="seed-list" class="full-lb-list"></ol>
+      </div>
+      <button id="close-lb-modal-btn" class="btn btn-secondary">Close</button>
+    </div>
+  </div>
+
+  <div id="screen-flash"></div>
   <script src="game.js"></script>
 </body>
 </html>
