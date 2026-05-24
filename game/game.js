@@ -28,7 +28,8 @@ function parseSeed() {
 // count >= 200.  After EARLY_ROUNDS the post-early pool is used: the same
 // interesting words PLUS all custom TRAP_WORDS, freely mixed.
 
-const EARLY_ROUNDS = 5;
+const EARLY_ROUNDS = 5;   // rounds 1-5: interesting pool only
+const FULL_ROUNDS  = 10;  // rounds 10+: entire word list (no restrictions)
 
 // Top ~500 most common English words (dictionary frequency).
 // Words in this set are excluded from the early-game pool so the first few
@@ -714,7 +715,9 @@ function nextRound() {
   setTimeout(() => {
     // Chain: old challenger becomes new anchor
     gs.anchorRank     = gs.challengerRank;
-    const pool = gs.streak < EARLY_ROUNDS ? gs.interestingPool : gs.postEarlyPool;
+    const pool = gs.streak < EARLY_ROUNDS ? gs.interestingPool
+               : gs.streak < FULL_ROUNDS  ? gs.postEarlyPool
+               : undefined;
     gs.challengerRank = pickChallengerRank(
       gs.words, gs.streak, gs.rand, gs.used, gs.anchorRank, gs.trapQueue, pool,
     );

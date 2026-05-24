@@ -25,6 +25,7 @@ function mulberry32(seed: number) {
 // ── Game logic — verbatim from game/game.js ───────────────────────────────────
 
 const EARLY_ROUNDS = 5;
+const FULL_ROUNDS  = 10;
 
 const COMMON_WORDS = new Set([
   'the','a','an','this','that','these','those','each','every','all','both',
@@ -296,7 +297,9 @@ function validateStreak(seed: number, claimedStreak: number): boolean {
     if (anchorRank === challengerRank) return false;
 
     anchorRank     = challengerRank;
-    const pool     = round + 1 < EARLY_ROUNDS ? interestingPool : postEarlyPool;
+    const pool     = round + 1 < EARLY_ROUNDS ? interestingPool
+                   : round + 1 < FULL_ROUNDS  ? postEarlyPool
+                   : undefined;
     challengerRank = pickChallengerRank(words, round + 1, rand, used, anchorRank, trapQueue, pool);
   }
 
